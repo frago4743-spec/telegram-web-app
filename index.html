@@ -2,43 +2,160 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: #17212b; color: white; padding: 20px; }
-        .chat { display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; }
-        .bot { background: #2b3a4a; align-self: flex-start; }
-        .user { background: #248bda; align-self: flex-end; cursor: pointer; }
+        :root {
+            --bg-color: #17212b;
+            --msg-bot: #24303f;
+            --msg-user: #2b5278;
+            --text-color: #ffffff;
+            --input-bg: #17212b;
+            --accent: #248bda;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Контейнер чата */
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 80px; /* место для инпута */
+        }
+
+        /* Пузыри сообщений */
+        .msg {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.4;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .bot {
+            background-color: var(--msg-bot);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-btn {
+            background-color: var(--msg-user);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            text-align: left;
+        }
+
+        .user-btn:active { opacity: 0.7; }
+
+        /* Поле ввода внизу */
+        .input-panel {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #24303f;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid #000;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: white;
+            outline: none;
+            font-size: 15px;
+        }
+
+        input:disabled {
+            opacity: 0.4;
+            background: #121921;
+        }
+
         .hidden { display: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing { font-style: italic; font-size: 12px; color: #6c7883; margin-left: 10px; }
     </style>
 </head>
 <body>
-    <div class="chat" id="chat">
+
+    <div id="chat-container">
         <div class="msg bot" id="m1">Привет! Хочешь помогу создать твоего бота?</div>
-        <div class="msg user hidden" id="u1" onclick="next(1)">Да.</div>
-        <div class="msg bot hidden" id="m2">Смотри, если ты готов, то тебе придёт код в телеграм и тебе надо будет его ввести. Этот код называют bot_api. Он нужен для создания бота, представь себе некий ключ которым ты можешь завести и управлять своим ботом. Именно поэтому если кто то получит его, то не известно что станет с твоим ботом. И так, ты готов создать бота?</div>
-        <div class="msg user hidden" id="u2" onclick="next(2)">Да, я готов.</div>
-        <div class="msg bot hidden" id="m3">Отлично! Теперь приступим к настройке...</div>
+        <button class="msg user-btn" id="b1" onclick="step1()">Да.</button>
+
+        <div class="msg bot hidden" id="m2">Смотри, если ты готов, то тебе придёт код в телеграм и тебе надо будет его ввести. Этот код называют bot_api. Он нужен для создания бота... И так, ты готов создать бота?</div>
+        <button class="msg user-btn hidden" id="b2" onclick="step2()">Да, я готов.</button>
+
+        <div class="msg bot hidden" id="m3">Отлично! Введи свой bot_api код в поле ниже:</div>
+        
+        <div id="status" class="typing hidden">бот печатает...</div>
+    </div>
+
+    <div class="input-panel">
+        <input type="text" id="bot-input" placeholder="Сначала ответьте боту..." disabled>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Показываем первую кнопку через 1 секунду
-        setTimeout(() => document.getElementById('u1').classList.remove('hidden'), 1000);
+        const input = document.getElementById('bot-input');
+        const status = document.getElementById('status');
 
-        function next(step) {
-            if (step === 1) {
-                document.getElementById('u1').classList.add('hidden');
+        function showTyping(callback, delay) {
+            status.classList.remove('hidden');
+            setTimeout(() => {
+                status.classList.add('hidden');
+                callback();
+            }, delay);
+        }
+
+        function step1() {
+            document.getElementById('b1').classList.add('hidden');
+            showTyping(() => {
                 document.getElementById('m2').classList.remove('hidden');
-                setTimeout(() => document.getElementById('u2').classList.remove('hidden'), 1500);
-            } else if (step === 2) {
-                document.getElementById('u2').classList.add('hidden');
+                document.getElementById('b2').classList.remove('hidden');
+            }, 1500);
+        }
+
+        function step2() {
+            document.getElementById('b2').classList.add('hidden');
+            showTyping(() => {
                 document.getElementById('m3').classList.remove('hidden');
-                // Можно добавить логику завершения
-            }
+                // Разблокируем ввод
+                input.disabled = false;
+                input.placeholder = "Введите bot_api...";
+                input.style.border = "1px solid #248bda";
+                input.focus();
+            }, 2000);
         }
     </script>
 </body>
