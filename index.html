@@ -5,24 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #17212b; color: white; font-family: sans-serif; padding: 15px; margin: 0; }
-        .msg { padding: 10px 15px; border-radius: 15px; margin-bottom: 10px; max-width: 80%; }
-        .bot { background: #2b3a4a; align-self: flex-start; }
-        .user { background: #248bda; align-self: flex-end; margin-left: auto; }
+        body { font-family: sans-serif; background: #17212b; color: white; padding: 15px; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 70px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 15px; line-height: 1.4; }
+        .bot { background: #2b3a4a; align-self: flex-start; border-bottom-left-radius: 5px; }
+        .user-btn { background: #248bda; color: white; border: none; align-self: flex-end; border-bottom-right-radius: 5px; cursor: pointer; text-align: left; }
+        .user-btn:disabled { opacity: 0.6; cursor: default; }
         .hidden { display: none; }
-        .typing { font-size: 12px; color: #6c7883; margin-bottom: 10px; }
+        .typing { font-size: 12px; color: #6c7883; margin: 5px 0; }
+        .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: #24303f; padding: 10px; display: flex; }
+        input { flex: 1; background: #17212b; border: 1px solid #000; border-radius: 20px; padding: 10px 15px; color: white; outline: none; }
+        input:disabled { opacity: 0.3; }
     </style>
 </head>
 <body>
     <div id="chat">
         <div class="msg bot">Привет! Хочешь помогу создать твоего бота?</div>
-        <button id="b1" class="msg user" onclick="step1()">Да.</button>
-        <div id="m2" class="msg bot hidden">Смотри, если ты готов, то тебе придёт код в телеграм... И так, ты готов создать бота?</div>
-        <button id="b2" class="msg user hidden" onclick="step2()">Да, я готов.</button>
-        <div id="m3" class="msg bot hidden">Отлично! Введи свой bot_api в строку ниже.</div>
+        <button id="b1" class="msg user-btn" onclick="step1()">Да.</button>
+
+        <div id="m2" class="msg bot hidden">Смотри, если ты готов, то тебе придёт код в телеграм и тебе надо будет его ввести. Этот код называют bot_api... Ты готов создать бота?</div>
+        <button id="b2" class="msg user-btn hidden" onclick="step2()">Да, я готов.</button>
+
+        <div id="m3" class="msg bot hidden">Отлично! Теперь введи свой API ключ (или любой текст) в поле ниже:</div>
+        <div id="typing" class="typing hidden">бот печатает...</div>
     </div>
-    <div id="typing" class="typing hidden">бот печатает...</div>
-    <input type="text" id="api_input" disabled placeholder="Жду ответа...">
+
+    <div class="input-area">
+        <input type="text" id="api_input" disabled placeholder="Сначала ответь боту...">
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
@@ -44,10 +54,14 @@
             setTimeout(() => {
                 document.getElementById('typing').classList.add('hidden');
                 document.getElementById('m3').classList.remove('hidden');
-                document.getElementById('api_input').disabled = false;
-                // При отправке данных боту
-                document.getElementById('api_input').onchange = () => {
-                    tg.sendData(document.getElementById('api_input').value);
+                let inp = document.getElementById('api_input');
+                inp.disabled = false;
+                inp.placeholder = "Введите текст и нажмите Enter...";
+                inp.onkeypress = function(e) {
+                    if (e.which == 13) { // Нажатие Enter
+                        tg.sendData(inp.value);
+                        tg.close();
+                    }
                 };
             }, 2000);
         }
