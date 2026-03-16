@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #212121; color: white; padding: 20px; }
+        button { background: #248bda; color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h2 id="text">Ты готов?</h2>
+    <button id="btn" onclick="ready()">Да</button>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Развернуть на весь экран
+
+        function ready() {
+            document.getElementById("text").innerText = "Отлично!";
+            document.getElementById("btn").style.display = "none";
+
+            // Можно отправить данные обратно боту
+            // tg.sendData("Пользователь нажал Да");
+        }
+    </script>
+</body>
+</html>
