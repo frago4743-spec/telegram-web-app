@@ -1,26 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #212121; color: white; padding: 20px; }
-        button { background: #248bda; color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-size: 18px; }
+        body { font-family: sans-serif; background: #17212b; color: white; padding: 20px; }
+        .chat { display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; }
+        .bot { background: #2b3a4a; align-self: flex-start; }
+        .user { background: #248bda; align-self: flex-end; cursor: pointer; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <h2 id="text">Ты готов?</h2>
-    <button id="btn" onclick="ready()">Да</button>
+    <div class="chat" id="chat">
+        <div class="msg bot" id="m1">Привет! Хочешь помогу создать твоего бота?</div>
+        <div class="msg user hidden" id="u1" onclick="next(1)">Да.</div>
+        <div class="msg bot hidden" id="m2">Смотри, если ты готов, то тебе придёт код в телеграм и тебе надо будет его ввести. Этот код называют bot_api. Он нужен для создания бота, представь себе некий ключ которым ты можешь завести и управлять своим ботом. Именно поэтому если кто то получит его, то не известно что станет с твоим ботом. И так, ты готов создать бота?</div>
+        <div class="msg user hidden" id="u2" onclick="next(2)">Да, я готов.</div>
+        <div class="msg bot hidden" id="m3">Отлично! Теперь приступим к настройке...</div>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand();
 
-        function ready() {
-            document.getElementById("text").innerText = "Отлично!";
-            document.getElementById("btn").style.display = "none";
+        // Показываем первую кнопку через 1 секунду
+        setTimeout(() => document.getElementById('u1').classList.remove('hidden'), 1000);
 
-            // Можно отправить данные обратно боту
-            // tg.sendData("Пользователь нажал Да");
+        function next(step) {
+            if (step === 1) {
+                document.getElementById('u1').classList.add('hidden');
+                document.getElementById('m2').classList.remove('hidden');
+                setTimeout(() => document.getElementById('u2').classList.remove('hidden'), 1500);
+            } else if (step === 2) {
+                document.getElementById('u2').classList.add('hidden');
+                document.getElementById('m3').classList.remove('hidden');
+                // Можно добавить логику завершения
+            }
         }
     </script>
 </body>
